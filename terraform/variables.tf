@@ -23,5 +23,5 @@ variable "zone" {
 variable "image_id" {
   description = "ID of the Ubuntu 20.04 LTS image"
   type        = string
-  default     = "fd805q8b95c0v7q5f6v3"
+  default     = "fd8gk6f87bbfmuctfl6t"
 }
