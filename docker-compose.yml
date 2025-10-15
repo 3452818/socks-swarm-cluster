@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  # Фронтенд-сервис
+  front-end:
+    image: weaveworksdemos/front-end:0.3.12
+    hostname: front-end
+    deploy:
+      replicas: 2  # Масштабирование до 2 реплик
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # Edge-роутер (доступ снаружи)
+  edge-router:
+    image: weaveworksdemos/edge-router:0.1.1
+    deploy:
+      mode: global  # Запускается на каждой ноде
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - socksnet
+
+  # Каталог товаров
+  catalogue:
+    image: weaveworksdemos/catalogue:0.3.5
+    hostname: catalogue
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # База данных каталога
+  catalogue-db:
+    image: weaveworksdemos/catalogue-db:0.3.0
+    hostname: catalogue-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_DATABASE=socksdb
+    networks:
+      - socksnet
+
+  # Корзина
+  carts:
+    image: weaveworksdemos/carts:0.4.8
+    hostname: carts
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # База данных корзины
+  carts-db:
+    image: mongo:3.4
+    hostname: carts-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+    volumes:
+      - carts-db:/data/db
+
+  # Заказы
+  orders:
+    image: weaveworksdemos/orders:0.4.7
+    hostname: orders
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # База данных заказов
+  orders-db:
+    image: mongo:3.4
+    hostname: orders-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+    volumes:
+      - orders-db:/data/db
+
+  # Доставка
+  shipping:
+    image: weaveworksdemos/shipping:0.4.8
+    hostname: shipping
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.6.8
+    hostname: rabbitmq
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # Очередь сообщений
+
+  queue-master:
+    image: weaveworksdemos/queue-master:0.3.1
+    hostname: queue-master
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # Платёжный сервис
+  payment:
+    image: weaveworksdemos/payment:0.4.3
+    hostname: payment
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # Пользовательский сервис
+  user:
+    image: weaveworksdemos/user:0.4.4
+    hostname: user
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      - MONGO_HOST=user-db:27017
+    networks:
+      - socksnet
+
+  # База данных пользователей
+  user-db:
+    image: weaveworksdemos/user-db:0.4.0
+    hostname: user-db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - socksnet
+
+  # Симулятор нагрузки
+  user-simulator:
+    image: weaveworksdemos/load-test:0.1.1
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    command: "-d 60 -r 200 -c 2 -h edge-router"
+    networks:
+      - socksnet
+
+volumes:
+  carts-db:
+  orders-db:
+
+networks:
+  socksnet:
+    external: true  # Используем сеть, созданную Terraform
+
+
