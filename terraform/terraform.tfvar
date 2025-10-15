@@ -1,5 +1,5 @@
-yc_token    = "y0__xCbsICHAxjB3RMggJiQ1RRnf5_VM76o9RRJVmIQu_YDZiDlzQ"
-cloud_id    = "b1go8ejc3j3vfunceoda"
-folder_id   = "b1gljtsoueqq0mq86dmi"
+yc_token    = "your_token"
+cloud_id    = "your_cloud_id"
+folder_id   = "your_folder_id"
 zone        = "ru-central1-a"
 image_id    = "fd8gk6f87bbfmuctfl6t"
